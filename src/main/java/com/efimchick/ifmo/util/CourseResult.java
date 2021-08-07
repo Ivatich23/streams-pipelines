@@ -1,6 +1,7 @@
 package com.efimchick.ifmo.util;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CourseResult {
     private final Person person;
@@ -18,4 +19,5 @@ public class CourseResult {
     public Map<String, Integer> getTaskResults() {
         return taskResults;
     }
+
 }
