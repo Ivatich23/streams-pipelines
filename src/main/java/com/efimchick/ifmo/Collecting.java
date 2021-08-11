@@ -28,12 +28,15 @@ public class Collecting {
 
     /*public Map<Integer, Integer> sumByRemainder(IntStream intStream, final int divisor) {
 
-        return intStream.collect(Collectors.groupingBy(Collectors.reducing((value,div)->value/divisor, Integer::sum));
+        return intStream.collect(Collectors.groupingBy(Collectors.reducing((value,div)->value/divisor,
+         Integer::sum));
     }*/
     public Map<Person, Double> totalScores(Stream<CourseResult> courseResultStream) {
-        long sumOfSubjects = courseResultStream.map(courseResult -> courseResult
-                .getTaskResults().values().size()).max(Integer::compareTo).get();
-        return courseResultStream.collect(Collectors
+        List<CourseResult> courseResults = courseResultStream.collect(Collectors.toList());
+        Supplier<Stream<CourseResult>> streamSupplier = () -> courseResults.stream();
+        long sumOfSubjects = streamSupplier.get().flatMap(courseResult -> courseResult
+                .getTaskResults().keySet().stream()).distinct().count();
+        return streamSupplier.get().collect(Collectors
                 .toMap(person -> person.getPerson(), person -> person.getTaskResults()
                         .values().stream().map(value -> value.doubleValue())
                         .reduce(0.0, (value, sum) -> sum + value) / sumOfSubjects));
@@ -42,20 +45,25 @@ public class Collecting {
     }
 
     public Double averageTotalScore(Stream<CourseResult> courseResultStream) {
-        int sumOfScores = Optional.of(courseResultStream.flatMap(value -> value
+        List<CourseResult> courseResults = courseResultStream.collect(Collectors.toList());
+        Supplier<Stream<CourseResult>> streamSupplier = () -> courseResults.stream();
+        int sumOfScores = streamSupplier.get().flatMap(value -> value
                 .getTaskResults().values().stream())
-                .reduce(0, (value, tempValue) -> tempValue + value)).get();
-        long sumOfStudents = Stream.of(courseResultStream).count();
-        long sumOfSubjects = Stream.of(courseResultStream).map(courseResult -> courseResult
-                .getTaskResults().values().size()).max(Integer::compareTo).get();
-        return (double) (sumOfScores / sumOfStudents/sumOfSubjects);
+                .reduce(0, (value, tempValue) -> tempValue + value);
+        long sumOfStudents = streamSupplier.get().count();
+
+        long sumOfSubjects = streamSupplier.get().flatMap(courseResult -> courseResult
+                .getTaskResults().keySet().stream()).distinct().count();
+        return  ((double)sumOfScores / (double)sumOfStudents / (double)sumOfSubjects);
 
 
     }
 
     public Map<String, Double> averageScoresPerTask(Stream<CourseResult> courseResultStream) {
-        long sumOfStudents = courseResultStream.count();
-        Map<String, Double> mapOfResults = courseResultStream.flatMap(value -> value.getTaskResults().entrySet().stream())
+        List<CourseResult> courseResults = courseResultStream.collect(Collectors.toList());
+        Supplier<Stream<CourseResult>> streamSupplier = () -> courseResults.stream();
+        long sumOfStudents = streamSupplier.get().count();
+        Map<String, Double> mapOfResults = streamSupplier.get().flatMap(value -> value.getTaskResults().entrySet().stream())
                 .collect(Collectors
                         .groupingBy(value -> value.getKey(), Collectors.summingDouble(value -> value.getValue())));
         mapOfResults.entrySet().forEach(value -> value.setValue(value.getValue() / sumOfStudents));
@@ -91,48 +99,44 @@ public class Collecting {
     }
 
 
+    Collector<CourseResult, StringBuilder, String> myCollector = new Collector<CourseResult, StringBuilder, String>() {
+        @Override
+        public Supplier<StringBuilder> supplier() {
+            return StringBuilder::new;
+        }
 
- /*       "%-15s%-15s%-10s%-10s%n-5s%n-5s%n", "| Student"
-                , "| Phalanxing", "| Tercioing", "| Wedging", "| Total ", "| Mark |";*/
+        @Override
+        public BiConsumer<StringBuilder, CourseResult> accumulator() {
 
-        Collector<CourseResult, StringBuilder, String> myCollector = new Collector<CourseResult, StringBuilder, String>() {
-            @Override
-            public Supplier<StringBuilder> supplier() {
-                return StringBuilder::new;
-            }
+            return ((stringBuilder, courseResult) -> stringBuilder.
+                    append(String.format("%-15s%-15d%-10d%-10d%n-5f%n-5s%n"
+                            , courseResult.getPerson(),
+                            courseResult.getTaskResults().get("Lab 1. Figures"),
+                            courseResult.getTaskResults().get("Lab 2. War and Peace"),
+                            courseResult.getTaskResults().get("Lab 3. File Tree"),
+                            courseResult.getTaskResults().values().stream().reduce(0, Integer::sum) / 3,
+                            fromDoubleToString(courseResult.getTaskResults().values().stream().reduce(0, Integer::sum) / 3))));
 
-            @Override
-            public BiConsumer<StringBuilder, CourseResult> accumulator() {
 
-           /*     return ((stringBuilder, courseResult) -> stringBuilder.append(String.format("afasdad",courseResult.))
 
-                        (courseResult.getPerson())
-                        .append(courseResult.getTaskResults().get("Lab 1. Figures"))
-                        .append(courseResult.getTaskResults().get("Lab 2. War and Peace"))
-                        .append(courseResult.getTaskResults().get("Lab 3. File Tree"))
-                        .append(courseResult.getTaskResults().values().stream().reduce(0,Integer::sum)/3)
-                        .append(fromDoubleToString(courseResult.getTaskResults().values().stream().reduce(0,Integer::sum)/3))
-                .append("\n"))
-                        ;*/
-                return null;
-            }
+        }
 
-            @Override
-            public BinaryOperator<StringBuilder> combiner() {
-                return null;
-            }
+        @Override
+        public BinaryOperator<StringBuilder> combiner() {
+            return null;
+        }
 
-            @Override
-            public Function<StringBuilder, String> finisher() {
+        @Override
+        public Function<StringBuilder, String> finisher() {
 
-                return null;
-            }
+            return null;
+        }
 
-            @Override
-            public Set<Characteristics> characteristics() {
-                return null;
-            }
-        };
+        @Override
+        public Set<Characteristics> characteristics() {
+            return null;
+        }
+    };
 
 
 
