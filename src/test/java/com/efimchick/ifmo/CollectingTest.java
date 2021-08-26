@@ -128,7 +128,7 @@ public class CollectingTest {
                 new Collecting().totalScores(historyResults(new Random(986513))));
     }
 
-    @Test
+   @Test
     public void testAverageTotalScores() {
         assertEquals(80.66666666666667, new Collecting().averageTotalScore(programmingResults(new Random(8624))), 0.001);
         assertEquals(76.66666666666667, new Collecting().averageTotalScore(programmingResults(new Random(9513))), 0.001);
@@ -173,7 +173,7 @@ public class CollectingTest {
         assertMapEquals(expected4, received4);
     }
 
-    @Test
+   @Test
     public void testDefineMarks() {
         assertEquals(
                 Map.of(new Person("Umberto", "Silverhand", 29), "A",
