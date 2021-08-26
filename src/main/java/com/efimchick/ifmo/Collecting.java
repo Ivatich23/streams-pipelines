@@ -26,11 +26,13 @@ public class Collecting {
         return intStream.filter(value -> value % 2 != 0).reduce(0, Integer::sum);
     }
 
-    /*public Map<Integer, Integer> sumByRemainder(IntStream intStream, final int divisor) {
+    public Map<Integer, Integer> sumByRemainder(int divisor,IntStream intStream) {
 
-        return intStream.collect(Collectors.groupingBy(Collectors.reducing((value,div)->value/divisor,
-         Integer::sum));
-    }*/
+        return intStream
+                .boxed()
+                .collect(Collectors.groupingBy(el -> el % divisor,Collectors.summingInt(el->el)));
+    }
+
     public Map<Person, Double> totalScores(Stream<CourseResult> courseResultStream) {
         List<CourseResult> courseResults = courseResultStream.collect(Collectors.toList());
         Supplier<Stream<CourseResult>> streamSupplier = () -> courseResults.stream();
@@ -54,7 +56,7 @@ public class Collecting {
 
         long sumOfSubjects = streamSupplier.get().flatMap(courseResult -> courseResult
                 .getTaskResults().keySet().stream()).distinct().count();
-        return  ((double)sumOfScores / (double)sumOfStudents / (double)sumOfSubjects);
+        return ((double) sumOfScores / (double) sumOfStudents / (double) sumOfSubjects);
 
 
     }
@@ -98,55 +100,46 @@ public class Collecting {
         ).max(Map.Entry.comparingByValue()).stream().findFirst().get().getKey();
     }
 
+    public Collector<CourseResult, StringBuilder, String> printableStringCollector() {
+        Collector<CourseResult, StringBuilder, String> myCollector =
+                new Collector<CourseResult, StringBuilder, String>() {
+                    @Override
+                    public Supplier<StringBuilder> supplier() {
+                        return StringBuilder::new;
+                    }
 
-    Collector<CourseResult, StringBuilder, String> myCollector = new Collector<CourseResult, StringBuilder, String>() {
-        @Override
-        public Supplier<StringBuilder> supplier() {
-            return StringBuilder::new;
-        }
+                    @Override
+                    public BiConsumer<StringBuilder, CourseResult> accumulator() {
 
-        @Override
-        public BiConsumer<StringBuilder, CourseResult> accumulator() {
+                        return ((stringBuilder, courseResult) -> stringBuilder.
+                                append(String.format("|%-15s|%-15d|%-10d|%-10d|%n-5f|%n-5s|%n"
+                                        , courseResult.getPerson(),
+                                        courseResult.getTaskResults().get("Lab 1. Figures"),
+                                        courseResult.getTaskResults().get("Lab 2. War and Peace"),
+                                        courseResult.getTaskResults().get("Lab 3. File Tree"),
+                                        courseResult.getTaskResults().values().stream().reduce(0, Integer::sum) / 3,
+                                        fromDoubleToString(courseResult.getTaskResults().values().stream()
+                                                .reduce(0, Integer::sum) / 3))));
+                    }
 
-            return ((stringBuilder, courseResult) -> stringBuilder.
-                    append(String.format("%-15s%-15d%-10d%-10d%n-5f%n-5s%n"
-                            , courseResult.getPerson(),
-                            courseResult.getTaskResults().get("Lab 1. Figures"),
-                            courseResult.getTaskResults().get("Lab 2. War and Peace"),
-                            courseResult.getTaskResults().get("Lab 3. File Tree"),
-                            courseResult.getTaskResults().values().stream().reduce(0, Integer::sum) / 3,
-                            fromDoubleToString(courseResult.getTaskResults().values().stream().reduce(0, Integer::sum) / 3))));
+                    @Override
+                    public BinaryOperator<StringBuilder> combiner() {
+                        return null;
+                    }
 
+                    @Override
+                    public Function<StringBuilder, String> finisher() {
 
+                        return sb -> "шапка \n" + sb.toString();
+                    }
 
-        }
-
-        @Override
-        public BinaryOperator<StringBuilder> combiner() {
-            return null;
-        }
-
-        @Override
-        public Function<StringBuilder, String> finisher() {
-
-            return null;
-        }
-
-        @Override
-        public Set<Characteristics> characteristics() {
-            return null;
-        }
-    };
-
-
-
-
-
-
-                /*Collector.of(
-                () -> new StringBuilder(), (s,c) -> s.append(c.getPerson().getLastName()),StringBuilder::toString);
-courseResultStream.collect(Collectors.toList()).forEach(x-> System.out.printf("%-15s%-15s%-10s%-10s%n-5s%n-5s%n",
-        x.getPerson().getLastName(),x.getTaskResults());*/
+                    @Override
+                    public Set<Characteristics> characteristics() {
+                        return null;
+                    }
+                };
+        return myCollector;
+    }
 
 
 }

@@ -46,7 +46,7 @@ public class CollectingTest {
         assertEquals(0, new Collecting().oddSum(IntStream.iterate(0, i -> -2).limit(8)));
     }
 
-   /* @Test
+    @Test
     public void testSumByRemainder() {
 
         assertEquals(
@@ -102,7 +102,7 @@ public class CollectingTest {
                 new Collecting().sumByRemainder(3, IntStream.iterate(0, i -> (i + 1) % 7).limit(20))
         );
 
-    }*/
+    }
 
     @Test
     public void testTotalScores() {
@@ -226,7 +226,7 @@ public class CollectingTest {
                 new Collecting().easiestTask(historyResults(new Random(7))));
     }
 
-    /*@Test
+    @Test
     public void testToPrintableStringCollector() {
         assertEquals(
                 "Student         | Lab 1. Figures | Lab 2. War and Peace | Lab 3. File Tree | Total | Mark |\n" +
@@ -261,7 +261,7 @@ public class CollectingTest {
                         "Average        |      45.33 |         89.67 |     52.00 |   37.00 | 56.00 |    F |",
                 historyResults(new Random(9568745))
                         .collect(new Collecting().printableStringCollector()));
-    }*/
+    }
 
 
     private final String[] names = {"Johnny", "Betty", "Ragnar", "Umberto"};
